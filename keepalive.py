@@ -132,8 +132,8 @@ def main():
             log("healthy scheduled tick -> silent")
         return 0
 
-    # 失败（或 force）：问 eazo 现在这台沙箱是哪个
-    log("probe failed, asking eazo session api ...")
+    # 走到这里 = 探测失败，或者被 force 强制走完整流程
+    log("probe ok=%s force=%s -> asking eazo session api ..." % (ok, FORCE))
     d, err = session_info()
     if err:
         log("session api error:", err)
