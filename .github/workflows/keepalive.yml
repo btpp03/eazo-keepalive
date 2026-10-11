@@ -1,13 +1,17 @@
 name: eazo keepalive
 
 # 定时腿不靠 GitHub 自己的 schedule（本账号 schedule 基本不 fire），
-# 靠 cron-job.org 每 30 分钟 POST 一次 workflow_dispatch。
-# schedule 只当兜底，不要依赖它。
+# 靠 cron-job.org 每 30 分钟 POST 一次 workflow_dispatch（带 inputs.quiet=true，
+# 所以正常时不会推 TG）。schedule 只当兜底，不要依赖它。
 on:
   workflow_dispatch:
     inputs:
       force:
         description: "跳过「活着就早退」的短路，强制跑完整流程（用于验证）"
+        type: boolean
+        default: false
+      quiet:
+        description: "静默：即使成功也不推 TG（cron-job.org 外部腿用这个）"
         type: boolean
         default: false
   schedule:
@@ -31,6 +35,7 @@ jobs:
       TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
       FORCE: ${{ github.event.inputs.force }}
+      QUIET: ${{ github.event.inputs.quiet }}
     steps:
       - uses: actions/checkout@v4
 

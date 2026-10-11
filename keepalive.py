@@ -32,6 +32,9 @@ TG_CHAT = (os.environ.get("TG_CHAT_ID") or "").strip()
 REPO = os.environ.get("GITHUB_REPOSITORY") or "btpp03/eazo-keepalive"
 EVENT = os.environ.get("GITHUB_EVENT_NAME") or "local"
 FORCE = (os.environ.get("FORCE") or "").lower() in ("1", "true", "yes")
+# cron-job.org 也是用 workflow_dispatch 触发的，必须和「用户自己点 Run workflow」分开，
+# 否则每 30 分钟一条 TG。外部腿带 quiet=true；用户手点默认 quiet=false。
+QUIET = (os.environ.get("QUIET") or "").lower() in ("1", "true", "yes")
 REPO_URL = "https://github.com/" + REPO
 
 UA = {"User-Agent": "eazo-keepalive/1.0 (+%s)" % REPO_URL}
@@ -118,10 +121,10 @@ def main():
     if not HOST:
         tg("❌ eazo 保活｜EAZO_SANDBOX_HOST 没配，脚本跑不了\n" + REPO_URL)
         return 2
-    log("host=%s event=%s force=%s repo=%s" % (HOST, EVENT, FORCE, REPO))
+    log("host=%s event=%s force=%s quiet=%s repo=%s" % (HOST, EVENT, FORCE, QUIET, REPO))
 
     ok, code, body, dt = probe()
-    manual = EVENT == "workflow_dispatch"
+    manual = EVENT == "workflow_dispatch" and not QUIET
 
     if ok and not FORCE:
         log("RESULT=OK")
