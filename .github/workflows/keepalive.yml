@@ -1,0 +1,38 @@
+name: eazo keepalive
+
+# 定时腿不靠 GitHub 自己的 schedule（本账号 schedule 基本不 fire），
+# 靠 cron-job.org 每 30 分钟 POST 一次 workflow_dispatch。
+# schedule 只当兜底，不要依赖它。
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "跳过「活着就早退」的短路，强制跑完整流程（用于验证）"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "23 */2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eazo-keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      EAZO_SANDBOX_HOST: ${{ secrets.EAZO_SANDBOX_HOST }}
+      EAZO_TOKEN: ${{ secrets.EAZO_TOKEN }}
+      EAZO_CHAT_ID: ${{ secrets.EAZO_CHAT_ID }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+      FORCE: ${{ github.event.inputs.force }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ping sandbox
+        run: python3 keepalive.py
